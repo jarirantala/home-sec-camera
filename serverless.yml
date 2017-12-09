@@ -1,0 +1,28 @@
+service: home-sec-camera
+plugins:
+ - serverless-external-s3-event
+provider:
+  name: aws
+  runtime: python3.6
+  profile: jari
+  region: eu-west-1
+  iamRoleStatements:
+    -  Effect: "Allow"
+       Action:
+         - "s3:PutBucketNotification"
+       Resource:
+         Fn::Join:
+           - ""
+           - - "arn:aws:s3:::home-sec-cam-ireland"
+    - Effect: Allow
+      Action:
+        - "ses:SendEmail"
+      Resource: "*"
+functions:
+  secCamEmailSender:
+    handler: secCamEmailSender.handler
+    events:
+      - existingS3:
+          bucket: home-sec-cam-ireland
+          events:
+            - s3:ObjectCreated:*
